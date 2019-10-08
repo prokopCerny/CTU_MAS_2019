@@ -9,8 +9,11 @@ import mas.agents.task.mining.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Random;
 
 public class Agent extends AbstractAgent {
+    final Random random = new Random(43);
+
     public Agent(int id, InputStream is, OutputStream os, SimulationApi api) throws IOException, InterruptedException {
         super(id, is, os, api);
     }
@@ -30,7 +33,24 @@ public class Agent extends AbstractAgent {
                 log("I have received " + m);
             }
 
-            StatusMessage status = right();
+            StatusMessage status;
+            switch (random.nextInt(4)) {
+                case 0:
+                    status = left();
+                    break;
+                case 1:
+                    status = right();
+                    break;
+                case 2:
+                    status = up();
+                    break;
+                default:
+                    status = down();
+                    break;
+            }
+            if (status.isAtGold()) {
+                status = pick();
+            }
             log(String.format("I am now on position [%d,%d] of a %dx%d map.",
                     status.agentX, status.agentY, status.width, status.height));
             for(StatusMessage.SensorData data : status.sensorInput) {
@@ -40,9 +60,9 @@ public class Agent extends AbstractAgent {
 
             // REMOVE THIS BEFORE SUBMITTING YOUR SOLUTION TO BRUTE !!
             //   (this is meant just to slow down the execution a bit for demonstration purposes)
-            try {
-                Thread.sleep(200);
-            } catch(InterruptedException ie) {}
+//            try {
+//                Thread.sleep(200);
+//            } catch(InterruptedException ie) {}
         }
     }
 }
