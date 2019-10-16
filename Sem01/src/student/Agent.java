@@ -14,6 +14,8 @@ import java.util.Random;
 public class Agent extends AbstractAgent {
     Position depot = null;
     Strategy strategy = new RandomWalkStrategy(this);
+    private Map map;
+    private long time = 1L;
 
     public Agent(int id, InputStream is, OutputStream os, SimulationApi api) throws IOException, InterruptedException {
         super(id, is, os, api);
@@ -29,9 +31,21 @@ public class Agent extends AbstractAgent {
         for (int curId = getAgentId()-1; curId > 0; --curId) {
             sendMessage(curId, new StringMessage(String.format("I, %d exist", getAgentId())));
         }
+        StatusMessage start = sense();
+        map = new Map(start.width, start.height);
+        for (StatusMessage.SensorData d : start.sensorInput) {
+            if(map.update(d.x, d.y, d.type, time)) {
+                for (int agentId = 1; agentId <= 5; agentId++) {
+                    if (agentId != getAgentId()) {
+                        sendMessage(agentId, new MapMessage(d.type, d.x, d.y));
+                    }
+                }
+            }
+        }
 
 
         while(true) {
+            time++;
             while (messageAvailable()) {
                 Message m = readMessage();
                 handleMessage(m);
@@ -52,6 +66,7 @@ public class Agent extends AbstractAgent {
     void handleMessage(Message m) throws Exception {
         if (m instanceof MapMessage) {
             MapMessage M = (MapMessage) m;
+            map.update(M, time);
             switch (M.type) {
                 case StatusMessage.DEPOT:
                     depot = new Position(M.x, M.y);
