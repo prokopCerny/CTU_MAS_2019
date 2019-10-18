@@ -4,8 +4,10 @@ import mas.agents.task.mining.Position;
 import mas.agents.task.mining.StatusMessage;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * column is called x
@@ -41,6 +43,7 @@ public class Map {
         }
     }
 
+
     public boolean update(int x, int y, int type, long time) {
         final MapNode n = this.getAt(x, y);
         n.lastSeen = time;
@@ -62,5 +65,20 @@ public class Map {
                     .ifPresent(mn -> {this.depot = new Position(mn.x, mn.y);});
         }
         return Optional.ofNullable(depot);
+    }
+
+    public Position goTo(int x, int y) {
+        return null;
+    }
+
+    public Position oldestClosest(int x, int y) {
+        Comparator<MapNode> c = Comparator.comparingLong(n -> n.lastSeen).thenComparingInt(n -> MapUtils.manhattanDist(x, y, n.x, n.y));
+        Optional<MapNode> oldClo = map.stream().sorted(c).findAny();
+        if (oldClo.isPresent()) {
+            return new Position(oldClo.get().x, oldClo.get().y);
+        } else {
+            oldClo.get();
+            return null;
+        }
     }
 }

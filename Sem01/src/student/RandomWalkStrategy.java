@@ -47,7 +47,7 @@ public class RandomWalkStrategy extends AbstractStrategy {
                 for (int agentID = 1; agentID <= 4; agentID++) {
                     if (agentID != agent.getAgentId()) {
                         agent.log(String.format("Sending depo to %d", agentID));
-                        agent.sendMessage(agentID, new MapMessage(data.type, data.x, data.y));
+                        agent.sendMessage(agentID, new MapMessage(data.type, data.x, data.y, agent.getAgentId()));
                     }
                 }
             }
