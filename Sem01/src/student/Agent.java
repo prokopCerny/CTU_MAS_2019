@@ -13,9 +13,13 @@ import java.util.Random;
 
 public class Agent extends AbstractAgent {
     Position depot = null;
-    Strategy strategy = new RandomWalkStrategy(this);
-    private Map map;
-    private long time = 1L;
+    Strategy strategy = new OldestWalkStrategy(this);
+    public Map map;
+    public long time = 1L;
+
+    enum Direction {
+        LEFT, RIGHT, UP, DOWN
+    }
 
     public Agent(int id, InputStream is, OutputStream os, SimulationApi api) throws IOException, InterruptedException {
         super(id, is, os, api);
@@ -32,26 +36,36 @@ public class Agent extends AbstractAgent {
             sendMessage(curId, new StringMessage(String.format("I, %d exist", getAgentId())));
         }
         StatusMessage start = sense();
-        map = new Map(start.width, start.height);
-        for (StatusMessage.SensorData d : start.sensorInput) {
-            if(map.update(d.x, d.y, d.type, time)) {
-                for (int agentId = 1; agentId <= 5; agentId++) {
-                    if (agentId != getAgentId()) {
-                        sendMessage(agentId, new MapMessage(d.type, d.x, d.y));
-                    }
-                }
-            }
-        }
+        map = new Map(this, start.width, start.height);
 
 
-        while(true) {
+        while (true) {
             time++;
+
             while (messageAvailable()) {
                 Message m = readMessage();
                 handleMessage(m);
             }
 
-            strategy.act(sense());
+            StatusMessage status = sense();
+
+            map.updateNeighborhoodTime(status, time);
+            for (int agentId = 1; agentId <= 4; agentId++) {
+                if (agentId != getAgentId()) {
+                    sendMessage(agentId, new MapMessage(StatusMessage.AGENT, status.agentX, status.agentY, getAgentId()));
+                }
+            }
+            for (StatusMessage.SensorData d : status.sensorInput) {
+                if(map.update(d.x, d.y, d.type, time)) {
+                    for (int agentId = 1; agentId <= 4; agentId++) {
+                        if (agentId != getAgentId()) {
+                            sendMessage(agentId, new MapMessage(d.type, d.x, d.y, getAgentId()));
+                        }
+                    }
+                }
+            }
+
+            strategy.act(status);
 
 
 
@@ -63,6 +77,51 @@ public class Agent extends AbstractAgent {
         }
     }
 
+    public Direction getDirection(int fromX, int fromY, int toX, int toY) {
+        if (fromX == toX) {
+            if (fromY > toY) {
+                return Direction.UP;
+            } else {
+                return Direction.DOWN;
+            }
+        } else {
+            if (fromX > toX) {
+                return Direction.LEFT;
+            } else {
+                return Direction.RIGHT;
+            }
+        }
+    }
+
+    public Direction getDirection(StatusMessage s, Position toPos) {
+        return getDirection(s.agentX, s.agentY, toPos.x, toPos.y);
+    }
+
+    public StatusMessage goInDirection(Direction direction) throws IOException {
+        StatusMessage status = null;
+        switch (direction) {
+            case RIGHT:
+                status = right();
+                break;
+            case LEFT:
+                status = left();
+                break;
+            case UP:
+                status = up();
+                break;
+            case DOWN:
+                status = down();
+        }
+        return status;
+    }
+
+    public StatusMessage randomMoveUntilMoved(StatusMessage origPos, StatusMessage curPos, Random random) throws IOException {
+        while (curPos.agentX == origPos.agentX && curPos.agentY == origPos.agentY) {
+            curPos = goInDirection(Utils.randomEnum(Direction.class, random));
+        }
+        return curPos;
+    }
+
     void handleMessage(Message m) throws Exception {
         if (m instanceof MapMessage) {
             MapMessage M = (MapMessage) m;
@@ -71,6 +130,9 @@ public class Agent extends AbstractAgent {
                 case StatusMessage.DEPOT:
                     depot = new Position(M.x, M.y);
                     strategy = new GoToDepotStrategy(this);
+                    break;
+                    case StatusMessage.AGENT:
+                        map.updateNeighborhoodTime(M.x, M.y, time);
                     break;
                 default:
                     log("I have received " + M);
