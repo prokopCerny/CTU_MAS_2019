@@ -14,11 +14,6 @@ public class RandomWalkStrategy extends AbstractStrategy {
     }
 
     @Override
-    public boolean canStop() {
-        return true;
-    }
-
-    @Override
     public StatusMessage act(StatusMessage status) throws Exception {
         switch (random.nextInt(4)) {
             case 0:
@@ -47,11 +42,16 @@ public class RandomWalkStrategy extends AbstractStrategy {
                 for (int agentID = 1; agentID <= 4; agentID++) {
                     if (agentID != agent.getAgentId()) {
                         agent.log(String.format("Sending depo to %d", agentID));
-                        agent.sendMessage(agentID, new MapMessage(data.type, data.x, data.y, agent.getAgentId()));
+                        agent.sendMessage(agentID, new MapMessage(data.type, data.x, data.y));
                     }
                 }
             }
         }
         return status;
+    }
+
+    @Override
+    public void handleMessage(AgentMessage m) throws Exception {
+
     }
 }

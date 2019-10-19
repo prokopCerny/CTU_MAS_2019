@@ -12,6 +12,7 @@ public class MapNode {
     public final int y;
     public List<MapNode> neighbors;
     public long lastSeen = 0L;
+    public int claimedBy = -1;
 
     public MapNode(int x, int y) {
         this.x = x;

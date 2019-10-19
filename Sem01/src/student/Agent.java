@@ -50,14 +50,14 @@ public class Agent extends AbstractAgent {
             map.updateNeighborhoodTime(status, time);
             for (int agentId = 1; agentId <= 4; agentId++) {
                 if (agentId != getAgentId()) {
-                    sendMessage(agentId, new MapMessage(StatusMessage.AGENT, status.agentX, status.agentY, getAgentId()));
+                    sendMessage(agentId, new MapMessage(StatusMessage.AGENT, status.agentX, status.agentY));
                 }
             }
             for (StatusMessage.SensorData d : status.sensorInput) {
                 if(map.update(d.x, d.y, d.type, time)) {
                     for (int agentId = 1; agentId <= 4; agentId++) {
                         if (agentId != getAgentId()) {
-                            sendMessage(agentId, new MapMessage(d.type, d.x, d.y, getAgentId()));
+                            sendMessage(agentId, new MapMessage(d.type, d.x, d.y));
                         }
                     }
                 }
@@ -136,6 +136,12 @@ public class Agent extends AbstractAgent {
                     log("I have received " + M);
                     break;
             }
+        } else if (m instanceof ClaimMessage) {
+            ClaimMessage M = (ClaimMessage) m;
+            int agentId = map.updateClaim(M.x, M.y, M.getSender());
+            sendMessage(M.getSender(), new ClaimResponseMessage(M.x, M.y, agentId));
+        } else if (m instanceof AgentMessage) {
+            strategy.handleMessage((AgentMessage) m);
         } else {
             log("I have received " + m);
         }

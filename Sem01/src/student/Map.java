@@ -16,10 +16,12 @@ public class Map {
     public final List<Position> agents;
     public final int width;
     public final int height;
+    public final MapNode[] agentClaims;
 
     public Map(Agent agent, int width, int height) {
         this.agent = agent;
         map = new ArrayList<>(width*height);
+        agentClaims = new MapNode[4];
         this.width = width;
         this.height = height;
         agents = new ArrayList<>(4);
@@ -39,6 +41,35 @@ public class Map {
                 }
             }
         }
+    }
+
+    public void removeClaim(int x, int y, int agentId) {
+        agentClaims[agentId-1] = null;
+        MapNode n = getAt(x, y);
+        if (n.claimedBy != -1) {
+            agentClaims[n.claimedBy - 1] = null;
+        }
+        n.claimedBy = -1;
+        n.type = 0;
+    }
+
+    public int updateClaim(int x, int y, int agentId) {
+        MapNode n = getAt(x, y);
+        if (n.claimedBy == -1) {
+            n.claimedBy = agentId;
+            agentClaims[agentId-1] = n;
+            return agentId;
+        } else {
+            if (n.claimedBy < agentId) {
+                return n.claimedBy;
+            } else {
+                agentClaims[n.claimedBy-1] = null;
+                n.claimedBy = agentId;
+                agentClaims[agentId-1] = n;
+                return agentId;
+            }
+        }
+
     }
 
 
@@ -88,11 +119,22 @@ public class Map {
         return Optional.ofNullable(depot);
     }
 
+    public Position goFromTo(StatusMessage from, Position to, int maxManhattanDist) {
+        return goFromTo(from.agentX, from.agentY, to.x, to.y, maxManhattanDist);
+    }
+
     public Position goFromTo(StatusMessage from, Position to) {
-        return goFromTo(from.agentX, from.agentY, to.x, to.y);
+        return goFromTo(from, to, 0);
     }
 
     public Position goFromTo(int x0, int y0, int x, int y) {
+        return goFromTo(x0, y0, x, y, 0);
+    }
+
+    public Position goFromTo(int x0, int y0, int x, int y, int maxManhattanDist) {
+        if (Utils.manhattanDist(x0, y0, x, y) <= maxManhattanDist) {
+            return null;
+        }
         MapNode start = getAt(x0, y0);
         Queue<MapNode> queue = new LinkedList<>();
         queue.add(start);
@@ -102,7 +144,7 @@ public class Map {
         visited[getIndex(start)] = true;
         while (!queue.isEmpty()){
             MapNode cur = queue.remove();
-            if (cur.x == x && cur.y == y) {
+            if (Utils.manhattanDist(cur.x, cur.y, x, y) <= maxManhattanDist) {
                 int end = getIndex(cur);
                 while (parent[end] != getIndex(start)) {
                     end = parent[end];
