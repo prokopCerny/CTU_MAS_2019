@@ -16,6 +16,7 @@ public class Agent extends AbstractAgent {
     Strategy strategy = new OldestWalkStrategy(this);
     public Map map;
     public long time = 1L;
+    boolean hasGold = false;
 
     enum Direction {
         LEFT, RIGHT, UP, DOWN
@@ -32,9 +33,6 @@ public class Agent extends AbstractAgent {
 
     @Override
     public void act() throws Exception {
-        for (int curId = getAgentId()-1; curId > 0; --curId) {
-            sendMessage(curId, new StringMessage(String.format("I, %d exist", getAgentId())));
-        }
         StatusMessage start = sense();
         map = new Map(this, start.width, start.height);
 

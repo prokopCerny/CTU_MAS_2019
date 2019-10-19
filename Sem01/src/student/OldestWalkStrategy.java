@@ -25,20 +25,17 @@ public class OldestWalkStrategy extends AbstractStrategy {
 //        if (status.isAtGold()) {
 //            status = agent.pick();
 //        }
+        if(!agent.hasGold) {
+
+        }
 
         agent.log(String.format("I am now on position [%d,%d] of a %dx%d map.",
                 status.agentX, status.agentY, status.width, status.height));
         for(StatusMessage.SensorData data : status.sensorInput) {
-            agent.log(String.format("I see %s at [%d,%d]", agent.types[data.type], data.x, data.y));
+            agent.log(String.format("I see %s at [%d,%d]", Agent.types[data.type], data.x, data.y));
             if (data.type == StatusMessage.DEPOT) {
                 agent.depot = new Position(data.x, data.y);
                 agent.strategy = new GoToDepotStrategy(agent);
-                for (int agentID = 1; agentID <= 4; agentID++) {
-                    if (agentID != agent.getAgentId()) {
-                        agent.log(String.format("Sending depo to %d", agentID));
-                        agent.sendMessage(agentID, new MapMessage(data.type, data.x, data.y, agent.getAgentId()));
-                    }
-                }
             }
         }
         return status;
