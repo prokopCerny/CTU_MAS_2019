@@ -118,6 +118,10 @@ public class Map {
         return getAt(pos.x, pos.y);
     }
 
+    public Optional<Position> getNearestDepot(Position pos) {
+        return map.stream().filter(n -> n.type == StatusMessage.DEPOT).map(MapNode::getPosition).min(Comparator.comparingInt(n -> Utils.manhattanDist(n, pos)));
+    }
+
     public Optional<Position> getDepot() {
         if (depot == null) {
             map.stream().filter(mn -> mn.type == StatusMessage.DEPOT)
@@ -180,6 +184,10 @@ public class Map {
 
     public Position oldestClosest(StatusMessage from) {
         return oldestClosest(from.agentX, from.agentY);
+    }
+
+    public Position oldestClosest(Position from) {
+        return oldestClosest(from.x, from.y);
     }
 
     public Position oldestClosest(int x, int y) {

@@ -6,7 +6,6 @@ import mas.agents.task.mining.StatusMessage;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.Random;
 
 public class OldestWalkStrategy extends AbstractStrategy {
     Position currentDestination = null;
@@ -74,6 +73,9 @@ public class OldestWalkStrategy extends AbstractStrategy {
     @Override
     public void visit(HelpMeMessage m) throws IOException {
         agent.sendMessage(m.getSender(), new WillHelpMessage(m));
-        agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y);
+        if (currentDestination == null) {
+            currentDestination = agent.map.oldestClosest(agent.map.agents[agent.getAgentId()-1].getPosition());
+        }
+        agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y, currentDestination);
     }
 }

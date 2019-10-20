@@ -5,7 +5,6 @@ import mas.agents.task.mining.StatusMessage;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 
 public class GoToGoldStrategy extends AbstractStrategy {
     public final Position gold;
@@ -47,6 +46,6 @@ public class GoToGoldStrategy extends AbstractStrategy {
     @Override
     public void visit(HelpMeMessage m) throws IOException {
         agent.sendMessage(m.getSender(), new WillHelpMessage(m));
-        agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y);
+        agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y, gold);
     }
 }

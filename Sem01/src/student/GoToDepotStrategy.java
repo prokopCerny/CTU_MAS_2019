@@ -5,7 +5,6 @@ import mas.agents.task.mining.StatusMessage;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.Random;
 
 public class GoToDepotStrategy extends AbstractStrategy {
 //    Position currentDestination = null;
@@ -22,7 +21,7 @@ public class GoToDepotStrategy extends AbstractStrategy {
     @Override
     public StatusMessage act(StatusMessage status) throws Exception {
         if (agent.hasGold) {
-            Optional<Position> depot = agent.map.getDepot();
+            Optional<Position> depot = agent.map.getNearestDepot(new Position(status.agentX, status.agentY));
             if (depot.isPresent()) {
                 Position nextStep = agent.map.goFromTo(status, depot.get());
                 if (nextStep == null) {
@@ -55,20 +54,19 @@ public class GoToDepotStrategy extends AbstractStrategy {
 
     @Override
     public void visit(HelpMeMessage m) throws IOException {
-        Optional<Position> depot = agent.map.getDepot();
+        Optional<Position> depot = agent.map.getNearestDepot(agent.map.agents[agent.getAgentId()-1].getPosition());
         if (depot.isPresent()) {
             Position depo = depot.get();
             Position myPos = agent.map.agents[agent.getAgentId()-1].getPosition();
-            Position askerPos = agent.map.agents[m.getSender()-1].getPosition();
-            Position askerDest = new Position(m.x, m.y);
-            if (Utils.manhattanDist(depo, myPos) > Utils.manhattanDist(askerPos, askerDest)) {
+            Position askerPos = new Position(m.x, m.y);
+            if (Utils.manhattanDist(depo, myPos) < Utils.manhattanDist(askerPos, myPos)) {
                 agent.sendMessage(m.getSender(), new WontHelpMessage(m));
             } else {
-                agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y);
+                agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y, depo);
                 agent.sendMessage(m.getSender(), new WillHelpMessage(m));
             }
         } else {
-            agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y);
+            agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y, new Position(m.x, m.y));
             agent.sendMessage(m.getSender(), new WillHelpMessage(m));
         }
     }

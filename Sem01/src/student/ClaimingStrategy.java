@@ -5,7 +5,6 @@ import mas.agents.task.mining.StatusMessage;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 
 public class ClaimingStrategy extends AbstractStrategy {
@@ -62,6 +61,6 @@ public class ClaimingStrategy extends AbstractStrategy {
     @Override
     public void visit(HelpMeMessage m) throws IOException {
         agent.sendMessage(m.getSender(), new WillHelpMessage(m));
-        agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y);
+        agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y, new Position(x, y));
     }
 }
