@@ -14,7 +14,7 @@ public class OldestWalkStrategy extends AbstractStrategy {
     public OldestWalkStrategy(Agent agent) {
         super(agent);
         try {
-            agent.log("Changed to" + this.getClass().getSimpleName());
+            agent.log("Changed to " + this.getClass().getSimpleName());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -53,7 +53,7 @@ public class OldestWalkStrategy extends AbstractStrategy {
 
         if (currentDestination == null || agent.map.getAt(currentDestination).type == StatusMessage.OBSTACLE || Utils.manhattanDist(status, currentDestination) <= 1) {
             currentDestination = agent.map.oldestClosest(status);
-            agent.log(String.format("Here (%d, %d), dist: %d", currentDestination.x, currentDestination.y, Utils.manhattanDist(status, currentDestination)));
+//            agent.log(String.format("Here (%d, %d), dist: %d", currentDestination.x, currentDestination.y, Utils.manhattanDist(status, currentDestination)));
         }
 
         Position nextStep = agent.map.goFromTo(status,currentDestination);

@@ -10,7 +10,7 @@ public class GoHelpStrategy extends AbstractStrategy {
     public GoHelpStrategy(Agent agent, int helpWho, int x, int y) {
         super(agent);
         try {
-            agent.log("Changed to" + this.getClass().getSimpleName());
+            agent.log("Changed to " + this.getClass().getSimpleName());
         } catch (Exception e) {
             e.printStackTrace();
         }

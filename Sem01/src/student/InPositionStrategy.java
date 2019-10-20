@@ -8,7 +8,7 @@ public class InPositionStrategy extends AbstractStrategy {
         super(agent);
         this.helpingWho = helpWho;
         try {
-            agent.log("Changed to" + this.getClass().getSimpleName());
+            agent.log("Changed to " + this.getClass().getSimpleName());
         } catch (Exception e) {
             e.printStackTrace();
         }

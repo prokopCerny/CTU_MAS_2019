@@ -188,11 +188,11 @@ public class Map {
         Optional<MapNode> oldClo = map.stream().filter(n -> n.type != StatusMessage.OBSTACLE).sorted(c).findAny();
 
         if (oldClo.isPresent()) {
-            try {
-                agent.log(String.format("Oldest closest (%d, %d)", oldClo.get().x, oldClo.get().y));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+//            try {
+//                agent.log(String.format("Oldest closest (%d, %d)", oldClo.get().x, oldClo.get().y));
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
             return new Position(oldClo.get().x, oldClo.get().y);
         } else {
             oldClo.get();

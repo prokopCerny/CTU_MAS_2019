@@ -13,7 +13,7 @@ public class GoToDepotStrategy extends AbstractStrategy {
     public GoToDepotStrategy(Agent agent) {
         super(agent);
         try {
-            agent.log("Changed to" + this.getClass().getSimpleName());
+            agent.log("Changed to " + this.getClass().getSimpleName());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -33,7 +33,7 @@ public class GoToDepotStrategy extends AbstractStrategy {
                         status = agent.randomMoveUntilMoved(status, status, agent.random);
                     }
                 } else {
-                    agent.log("Going to depo!");
+//                    agent.log("Going to depo!");
                     status = agent.randomMoveUntilMoved(status, agent.goInDirection(agent.getDirection(status, nextStep)), agent.random);
                 }
             } else {

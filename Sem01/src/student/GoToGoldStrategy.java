@@ -14,7 +14,7 @@ public class GoToGoldStrategy extends AbstractStrategy {
         super(agent);
         this.gold = gold;
         try {
-            agent.log("Changed to" + this.getClass().getSimpleName());
+            agent.log("Changed to " + this.getClass().getSimpleName());
         } catch (Exception e) {
             e.printStackTrace();
         }
