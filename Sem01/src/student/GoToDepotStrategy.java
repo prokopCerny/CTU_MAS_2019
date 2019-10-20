@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.Random;
 
 public class GoToDepotStrategy extends AbstractStrategy {
-    Strategy oldestWalk = null;
+//    Position currentDestination = null;
 
     public GoToDepotStrategy(Agent agent) {
         super(agent);
@@ -20,35 +20,30 @@ public class GoToDepotStrategy extends AbstractStrategy {
             if (depot.isPresent()) {
                 Position nextStep = agent.map.goFromTo(status, depot.get());
                 if (nextStep == null) {
-                    status = agent.drop();
-                    agent.hasGold = false;
+                    if (Utils.manhattanDist(status, depot.get()) == 0) {
+                        status = agent.drop();
+                        agent.hasGold = false;
+                    } else {
+                        status = agent.randomMoveUntilMoved(status, status, agent.random);
+                    }
                 } else {
                     agent.log("Going to depo!");
                     status = agent.randomMoveUntilMoved(status, agent.goInDirection(agent.getDirection(status, nextStep)), agent.random);
                 }
             } else {
-                status = getOldestWalk().act(status);
+//                if (currentDestination == null || agent.map.getAt(currentDestination).type == StatusMessage.OBSTACLE || Utils.manhattanDist(status, currentDestination) <= 1) {
+//                    currentDestination = currentDestination = agent.map.oldestClosest(status);
+//                }
+                Position nextStep = agent.map.goFromTo(status, agent.map.oldestClosest(status));
+                if (nextStep != null) {
+                    status = agent.randomMoveUntilMoved(status, agent.goInDirection(agent.getDirection(status, nextStep)), agent.random);
+                } else {
+                    status = agent.randomMoveUntilMoved(status, status, agent.random);
+                }
             }
         } else {
             agent.strategy = new OldestWalkStrategy(agent);
         }
         return status;
-    }
-
-    @Override
-    public void handleMessage(AgentMessage m) throws Exception {
-        //TODO
-//        if (m instanceof HelpMeMessage) {
-//            HelpMeMessage M = (HelpMeMessage) m;
-//            M.replyWith(new ConfirmationMessage(true));
-//            agent.strategy = new GoHelpStrategy(agent, new Position(M.x, M.y), M.getSender(), this);
-//        }
-    }
-
-    private Strategy getOldestWalk() {
-        if (oldestWalk == null) {
-            oldestWalk = new OldestWalkStrategy(agent);
-        }
-        return oldestWalk;
     }
 }

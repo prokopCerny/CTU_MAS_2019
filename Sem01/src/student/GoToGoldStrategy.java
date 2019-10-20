@@ -3,6 +3,8 @@ package student;
 import mas.agents.task.mining.Position;
 import mas.agents.task.mining.StatusMessage;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 
 public class GoToGoldStrategy extends AbstractStrategy {
@@ -25,17 +27,20 @@ public class GoToGoldStrategy extends AbstractStrategy {
                 status = agent.randomMoveUntilMoved(status, agent.goInDirection(dir), agent.random);
             }
         } else {
-
+            List<Integer> nearestAgents = agent.map.orderNearestOtherAgents(status.agentX, status.agentY);
+            for (int agentId : nearestAgents) {
+                //TODO
+                agent.sendMessage(agentId, new HelpMeMessage(status.agentX, status.agentY));
+                Thread.sleep(10);
+            }
+            agent.strategy = new WaitHelpReplyStrategy(agent, status.agentX, status.agentY);
         }
         return status;
     }
 
     @Override
-    public void handleMessage(AgentMessage m) throws Exception {
-        //TODO
-        if (m instanceof ClaimResponseMessage) {
-            ClaimResponseMessage M = (ClaimResponseMessage) m;
-            agent.map.updateClaim(M.x, M.y, M.agentId);
-        }
+    public void visit(HelpMeMessage m) throws IOException {
+        agent.sendMessage(m.getSender(), new WillHelpMessage(m));
+        agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y);
     }
 }

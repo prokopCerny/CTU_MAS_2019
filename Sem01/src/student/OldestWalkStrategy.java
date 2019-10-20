@@ -3,6 +3,7 @@ package student;
 import mas.agents.task.mining.Position;
 import mas.agents.task.mining.StatusMessage;
 
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Random;
@@ -41,7 +42,7 @@ public class OldestWalkStrategy extends AbstractStrategy {
                     return agent.strategy.act(status);
                 }
             }
-
+        } else {
 
         }
 
@@ -66,16 +67,8 @@ public class OldestWalkStrategy extends AbstractStrategy {
     }
 
     @Override
-    public void handleMessage(AgentMessage m) throws Exception {
-        //TODO
-        if (m instanceof ClaimResponseMessage) {
-            ClaimResponseMessage M = (ClaimResponseMessage) m;
-            agent.map.updateClaim(M.x, M.y, M.agentId);
-        }
-//        if (m instanceof HelpMeMessage) {
-//            HelpMeMessage M = (HelpMeMessage) m;
-//            M.replyWith(new ConfirmationMessage(true));
-//            agent.strategy = new GoHelpStrategy(agent, new Position(M.x, M.y), M.getSender(), this);
-//        }
+    public void visit(HelpMeMessage m) throws IOException {
+        agent.sendMessage(m.getSender(), new WillHelpMessage(m));
+        agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y);
     }
 }

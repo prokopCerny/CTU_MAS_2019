@@ -50,11 +50,8 @@ public class RandomWalkStrategy extends AbstractStrategy {
     }
 
     @Override
-    public void handleMessage(AgentMessage m) throws Exception {
-        if (m instanceof ClaimResponseMessage) {
-            ClaimResponseMessage M = (ClaimResponseMessage) m;
-            agent.map.updateClaim(M.x, M.y, M.agentId);
-        }
-
+    public void visit(HelpMeMessage m) throws IOException {
+        agent.sendMessage(m.getSender(), new WillHelpMessage(m));
+        agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y);
     }
 }

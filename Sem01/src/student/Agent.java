@@ -36,6 +36,14 @@ public class Agent extends AbstractAgent {
     public void act() throws Exception {
         StatusMessage start = sense();
         map = new Map(this, start.width, start.height);
+        map.updateNeighborhoodTime(start, time);
+        map.agents[getAgentId()-1] = map.getAt(start.agentX, start.agentY);
+        for (int agentId = 1; agentId <= 4; agentId++) {
+            if (agentId != getAgentId()) {
+                sendMessage(agentId, new MapMessage(StatusMessage.AGENT, start.agentX, start.agentY));
+            }
+        }
+        Thread.sleep(50);
 
 
         while (true) {
@@ -138,6 +146,7 @@ public class Agent extends AbstractAgent {
                 case StatusMessage.AGENT:
                     map.updateNeighborhoodTime(M.x, M.y, time);
                     map.agents[M.getSender()-1] = map.getAt(M.x, M.y);
+//                    log(String.format("updated %d", M.getSender()));
                 break;
                 default:
                     log("I have received " + M);
@@ -147,6 +156,9 @@ public class Agent extends AbstractAgent {
             ClaimMessage M = (ClaimMessage) m;
             int agentId = map.updateClaim(M.x, M.y, M.getSender());
             sendMessage(M.getSender(), new ClaimResponseMessage(M.x, M.y, agentId));
+        } else if (m instanceof RemoveClaimMessage) {
+            RemoveClaimMessage M = (RemoveClaimMessage) m;
+            map.removeClaim(M.x, M.y, M.getSender());
         } else if (m instanceof AgentMessage) {
             strategy.handleMessage((AgentMessage) m);
         } else {

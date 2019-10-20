@@ -2,14 +2,14 @@ package student;
 
 import java.io.IOException;
 
-public class HelpMeMessage extends AgentMessage {
-    public final int x;
-    public final int y;
+public class WillHelpMessage extends AgentMessage {
+    final int x;
+    final int y;
 
-    public HelpMeMessage(int x, int y) {
+    public WillHelpMessage(HelpMeMessage m) {
         super();
-        this.x = x;
-        this.y = y;
+        this.x = m.x;
+        this.y = m.y;
     }
 
     @Override

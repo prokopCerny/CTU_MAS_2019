@@ -4,6 +4,8 @@ import mas.agents.task.mining.Position;
 import mas.agents.task.mining.StatusMessage;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * column is called x
@@ -117,7 +119,7 @@ public class Map {
     }
 
     public Optional<Position> getDepot() {
-        if (depot != null) {
+        if (depot == null) {
             map.stream().filter(mn -> mn.type == StatusMessage.DEPOT)
                     .findAny()
                     .ifPresent(mn -> {this.depot = new Position(mn.x, mn.y);});
@@ -183,7 +185,7 @@ public class Map {
     public Position oldestClosest(int x, int y) {
 //        Comparator<MapNode> c = Comparator.<MapNode>comparingLong(n -> n.lastSeen).thenComparing(n -> Utils.manhattanDist(x, y, n.x, n.y), Collections.reverseOrder());
         Comparator<MapNode> c = Comparator.<MapNode>comparingLong(n -> n.lastSeen).thenComparing(n -> Utils.manhattanDist(x, y, n.x, n.y));
-        Optional<MapNode> oldClo = map.stream().sorted(c).findAny();
+        Optional<MapNode> oldClo = map.stream().filter(n -> n.type != StatusMessage.OBSTACLE).sorted(c).findAny();
 
         if (oldClo.isPresent()) {
             try {
@@ -203,5 +205,15 @@ public class Map {
             explored = map.stream().noneMatch(n -> n.lastSeen == 0L);
         }
         return explored;
+    }
+
+    public List<Integer> orderNearestOtherAgents(int x, int y) {
+        List<Integer> nearestAgents = IntStream.range(0, 4).boxed()
+            .filter(i -> i != agent.getAgentId()-1)
+            .filter(i -> Objects.nonNull(agents[i]))
+            .sorted(Comparator.comparingInt(i -> Utils.manhattanDist(agents[ i].x, agents[i].y, x, y)))
+            .map(i -> i+1)
+            .collect(Collectors.toList());
+        return nearestAgents;
     }
 }

@@ -11,4 +11,9 @@ public class ClaimResponseMessage extends AgentMessage {
         this.y = y;
         this.agentId = agentId;
     }
+
+    @Override
+    public void accept(AgentMessageVisitor visitor) {
+        visitor.visit(this);
+    }
 }

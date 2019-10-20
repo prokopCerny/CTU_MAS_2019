@@ -3,12 +3,13 @@ package student;
 import mas.agents.task.mining.Position;
 import mas.agents.task.mining.StatusMessage;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
 public class ClaimingStrategy extends AbstractStrategy {
-    Set<Integer> receivedConfirmations;
+    final Set<Integer> receivedConfirmations;
     final int x;
     final int y;
     public ClaimingStrategy(Agent agent, int x, int y) {
@@ -45,16 +46,17 @@ public class ClaimingStrategy extends AbstractStrategy {
     }
 
     @Override
-    public void handleMessage(AgentMessage m) throws Exception {
-        //TODO
-        if (m instanceof ClaimResponseMessage) {
-            ClaimResponseMessage M = (ClaimResponseMessage) m;
-            if (M.x == x && M.y == y && M.agentId == agent.getAgentId()) {
-                receivedConfirmations.add(M.getSender());
-            } else {
-                agent.map.updateClaim(M.x, M.y, M.agentId);
-            }
+    public void visit(ClaimResponseMessage m) {
+        if (m.x == x && m.y == y && m.agentId == agent.getAgentId()) {
+            receivedConfirmations.add(m.getSender());
+        } else {
+            agent.map.updateClaim(m.x, m.y, m.agentId);
         }
+    }
 
+    @Override
+    public void visit(HelpMeMessage m) throws IOException {
+        agent.sendMessage(m.getSender(), new WillHelpMessage(m));
+        agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y);
     }
 }
