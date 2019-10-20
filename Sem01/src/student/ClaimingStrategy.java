@@ -14,6 +14,11 @@ public class ClaimingStrategy extends AbstractStrategy {
     final int y;
     public ClaimingStrategy(Agent agent, int x, int y) {
         super(agent);
+        try {
+            agent.log("Changed to " + this.getClass().getSimpleName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         this.receivedConfirmations = new HashSet<>();
         this.x = x;
         this.y = y;
@@ -25,7 +30,7 @@ public class ClaimingStrategy extends AbstractStrategy {
             if (receivedConfirmations.size() == 3) {
                 agent.log(String.format("Claimed (%d, %d)!", x, y));
                 agent.strategy = new GoToGoldStrategy(agent, new Position(x, y));
-                status = agent.strategy.act(status);
+//                status = agent.strategy.act(status);
             } else {
                 for (int agentId = 1; agentId <= 4; ++agentId) {
                     if (agentId != agent.getAgentId()) {
@@ -40,7 +45,7 @@ public class ClaimingStrategy extends AbstractStrategy {
             }
         } else {
             agent.strategy = new OldestWalkStrategy(agent);
-            status = agent.strategy.act(status);
+//            status = agent.strategy.act(status);
         }
         return status;
     }

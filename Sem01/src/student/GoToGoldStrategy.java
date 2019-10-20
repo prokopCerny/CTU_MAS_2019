@@ -13,6 +13,11 @@ public class GoToGoldStrategy extends AbstractStrategy {
     public GoToGoldStrategy(Agent agent, Position gold) {
         super(agent);
         this.gold = gold;
+        try {
+            agent.log("Changed to" + this.getClass().getSimpleName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -28,12 +33,13 @@ public class GoToGoldStrategy extends AbstractStrategy {
             }
         } else {
             List<Integer> nearestAgents = agent.map.orderNearestOtherAgents(status.agentX, status.agentY);
+            agent.strategy = new WaitHelpReplyStrategy(agent, status.agentX, status.agentY);
             for (int agentId : nearestAgents) {
                 //TODO
                 agent.sendMessage(agentId, new HelpMeMessage(status.agentX, status.agentY));
                 Thread.sleep(10);
             }
-            agent.strategy = new WaitHelpReplyStrategy(agent, status.agentX, status.agentY);
+
         }
         return status;
     }

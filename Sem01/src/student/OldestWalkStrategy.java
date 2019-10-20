@@ -13,6 +13,11 @@ public class OldestWalkStrategy extends AbstractStrategy {
 
     public OldestWalkStrategy(Agent agent) {
         super(agent);
+        try {
+            agent.log("Changed to" + this.getClass().getSimpleName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -43,7 +48,7 @@ public class OldestWalkStrategy extends AbstractStrategy {
                 }
             }
         } else {
-
+            agent.strategy = new GoToDepotStrategy(agent);
         }
 
         if (currentDestination == null || agent.map.getAt(currentDestination).type == StatusMessage.OBSTACLE || Utils.manhattanDist(status, currentDestination) <= 1) {

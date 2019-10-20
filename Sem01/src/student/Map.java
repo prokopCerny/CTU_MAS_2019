@@ -141,11 +141,11 @@ public class Map {
 
     public Position goFromTo(int x0, int y0, int x, int y, int maxManhattanDist) {
         if (Utils.manhattanDist(x0, y0, x, y) <= maxManhattanDist) {
-            try {
-                agent.log("Very close");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+//            try {
+//                agent.log("Very close");
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
             return null;
         }
         MapNode start = getAt(x0, y0);

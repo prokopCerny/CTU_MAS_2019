@@ -1,5 +1,6 @@
 package student;
 
+import mas.agents.task.mining.Position;
 import mas.agents.task.mining.StatusMessage;
 
 import java.util.ArrayList;
@@ -27,6 +28,10 @@ public class MapNode {
 
     public void removeNeighbor(MapNode other) {
         this.neighbors.remove(other);
+    }
+
+    public Position getPosition() {
+        return new Position(x, y);
     }
 
     /**

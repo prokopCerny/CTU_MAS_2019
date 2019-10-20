@@ -7,6 +7,11 @@ public class InPositionStrategy extends AbstractStrategy {
     public InPositionStrategy(Agent agent, int helpWho) {
         super(agent);
         this.helpingWho = helpWho;
+        try {
+            agent.log("Changed to" + this.getClass().getSimpleName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

@@ -13,12 +13,17 @@ public class SittingAtGoldStrategy extends AbstractStrategy {
         this.helperAgent = helperAgent;
         this.x = x;
         this.y = y;
+        try {
+            agent.log("Changed to" + this.getClass().getSimpleName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public StatusMessage act(StatusMessage status) throws Exception {
         if (! status.isAtGold()) {
-            throw new RuntimeException("Sitting at gold while not standing at gold?!");
+            throw new RuntimeException("Agent " + agent.getAgentId() + " Sitting at gold while not standing at gold?!");
         }
         if (helperReady) {
             status = agent.pick();

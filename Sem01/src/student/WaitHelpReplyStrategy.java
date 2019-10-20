@@ -15,12 +15,18 @@ public class WaitHelpReplyStrategy extends AbstractStrategy {
         receivedWontHelps = new HashSet<>();
         this.x = x;
         this.y = y;
+        try {
+            agent.log("Changed to" + this.getClass().getSimpleName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public StatusMessage act(StatusMessage status) throws Exception {
         if (! status.isAtGold()) {
             throw new RuntimeException("Waiting for reply while not standing at gold?!");
+//            agent.strategy = new OldestWalkStrategy(agent);
         }
         if (receivedWontHelps.size() == 3) {
             agent.strategy = new OldestWalkStrategy(agent);
@@ -31,8 +37,8 @@ public class WaitHelpReplyStrategy extends AbstractStrategy {
     @Override
     public void visit(HelpMeMessage m) throws IOException {
         if (m.getSender() < agent.getAgentId()) {
-            agent.sendMessage(m.getSender(), new WillHelpMessage(m));
             agent.strategy = new WaitForHelpAckStrategy(agent, m.getSender(), m.x, m.y);
+            agent.sendMessage(m.getSender(), new WillHelpMessage(m));
         } else {
             agent.sendMessage(m.getSender(), new WontHelpMessage(m));
         }

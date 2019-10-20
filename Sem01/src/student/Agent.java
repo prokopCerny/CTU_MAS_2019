@@ -12,7 +12,6 @@ import java.io.OutputStream;
 import java.util.Random;
 
 public class Agent extends AbstractAgent {
-    Position depot = null;
     Strategy strategy = new OldestWalkStrategy(this);
     public Map map;
     public long time = 1L;
@@ -139,10 +138,6 @@ public class Agent extends AbstractAgent {
             MapMessage M = (MapMessage) m;
             map.update(M, time);
             switch (M.type) {
-                case StatusMessage.DEPOT:
-                    depot = new Position(M.x, M.y);
-                    strategy = new GoToDepotStrategy(this);
-                    break;
                 case StatusMessage.AGENT:
                     map.updateNeighborhoodTime(M.x, M.y, time);
                     map.agents[M.getSender()-1] = map.getAt(M.x, M.y);

@@ -12,6 +12,11 @@ public class WaitForHelpAckStrategy extends AbstractStrategy {
         this.helpWho = helpWho;
         this.x = x;
         this.y = y;
+        try {
+            agent.log("Changed to" + this.getClass().getSimpleName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
