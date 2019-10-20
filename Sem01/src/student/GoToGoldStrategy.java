@@ -6,7 +6,6 @@ import mas.agents.task.mining.StatusMessage;
 import java.util.Random;
 
 public class GoToGoldStrategy extends AbstractStrategy {
-    final Random random = new Random(43);
     public final Position gold;
 
     public GoToGoldStrategy(Agent agent, Position gold) {
@@ -17,8 +16,14 @@ public class GoToGoldStrategy extends AbstractStrategy {
     @Override
     public StatusMessage act(StatusMessage status) throws Exception {
         if (Utils.manhattanDist(status, gold) > 0) {
-            Agent.Direction dir = agent.getDirection(status, agent.map.goFromTo(status, gold));
-            status = agent.randomMoveUntilMoved(status, agent.goInDirection(dir), random);
+            Position nextStep = agent.map.goFromTo(status, gold);
+            if (nextStep == null) {
+                status = agent.randomMoveUntilMoved(status, status, agent.random);
+//                throw new NullPointerException("WHAAT");
+            } else {
+                Agent.Direction dir = agent.getDirection(status, nextStep);
+                status = agent.randomMoveUntilMoved(status, agent.goInDirection(dir), agent.random);
+            }
         } else {
 
         }
@@ -28,5 +33,9 @@ public class GoToGoldStrategy extends AbstractStrategy {
     @Override
     public void handleMessage(AgentMessage m) throws Exception {
         //TODO
+        if (m instanceof ClaimResponseMessage) {
+            ClaimResponseMessage M = (ClaimResponseMessage) m;
+            agent.map.updateClaim(M.x, M.y, M.agentId);
+        }
     }
 }

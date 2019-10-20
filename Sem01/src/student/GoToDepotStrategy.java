@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.Random;
 
 public class GoToDepotStrategy extends AbstractStrategy {
-    final Random random = new Random(43);
     Strategy oldestWalk = null;
 
     public GoToDepotStrategy(Agent agent) {
@@ -25,7 +24,7 @@ public class GoToDepotStrategy extends AbstractStrategy {
                     agent.hasGold = false;
                 } else {
                     agent.log("Going to depo!");
-                    status = agent.randomMoveUntilMoved(status, agent.goInDirection(agent.getDirection(status, nextStep)), random);
+                    status = agent.randomMoveUntilMoved(status, agent.goInDirection(agent.getDirection(status, nextStep)), agent.random);
                 }
             } else {
                 status = getOldestWalk().act(status);

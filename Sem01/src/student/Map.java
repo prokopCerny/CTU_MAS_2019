@@ -13,10 +13,12 @@ public class Map {
     private final Agent agent;
     public final List<MapNode> map;
     private Position depot = null;
-    public final List<Position> agents;
+    public MapNode[] agents;
     public final int width;
     public final int height;
     public final MapNode[] agentClaims;
+
+    private boolean explored = false;
 
     public Map(Agent agent, int width, int height) {
         this.agent = agent;
@@ -24,7 +26,7 @@ public class Map {
         agentClaims = new MapNode[4];
         this.width = width;
         this.height = height;
-        agents = new ArrayList<>(4);
+        agents = new MapNode[4];
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 MapNode current = new MapNode(x, y);
@@ -110,6 +112,10 @@ public class Map {
         return map.get(getIndex(x, y));
     }
 
+    public MapNode getAt(Position pos) {
+        return getAt(pos.x, pos.y);
+    }
+
     public Optional<Position> getDepot() {
         if (depot != null) {
             map.stream().filter(mn -> mn.type == StatusMessage.DEPOT)
@@ -133,6 +139,11 @@ public class Map {
 
     public Position goFromTo(int x0, int y0, int x, int y, int maxManhattanDist) {
         if (Utils.manhattanDist(x0, y0, x, y) <= maxManhattanDist) {
+            try {
+                agent.log("Very close");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return null;
         }
         MapNode start = getAt(x0, y0);
@@ -156,7 +167,9 @@ public class Map {
                 if (!visited[getIndex(n)]){
                     parent[getIndex(n)] = getIndex(cur);
                     visited[getIndex(n)] = true;
-                    queue.add(n);
+                    if (Utils.manhattanDist(x0, y0, n.x, n.y) > 2 || Arrays.stream(agents).filter(Objects::nonNull).noneMatch(mn -> mn.x == n.x && mn.y == n.y)) {
+                        queue.add(n);
+                    }
                 }
             }
         }
@@ -168,7 +181,8 @@ public class Map {
     }
 
     public Position oldestClosest(int x, int y) {
-        Comparator<MapNode> c = Comparator.<MapNode>comparingLong(n -> n.lastSeen).thenComparingInt(n -> Utils.manhattanDist(x, y, n.x, n.y));
+//        Comparator<MapNode> c = Comparator.<MapNode>comparingLong(n -> n.lastSeen).thenComparing(n -> Utils.manhattanDist(x, y, n.x, n.y), Collections.reverseOrder());
+        Comparator<MapNode> c = Comparator.<MapNode>comparingLong(n -> n.lastSeen).thenComparing(n -> Utils.manhattanDist(x, y, n.x, n.y));
         Optional<MapNode> oldClo = map.stream().sorted(c).findAny();
 
         if (oldClo.isPresent()) {
@@ -182,5 +196,12 @@ public class Map {
             oldClo.get();
             return null;
         }
+    }
+
+    public boolean isExplored() {
+        if (!explored) {
+            explored = map.stream().noneMatch(n -> n.lastSeen == 0L);
+        }
+        return explored;
     }
 }

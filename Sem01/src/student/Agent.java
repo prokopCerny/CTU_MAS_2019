@@ -17,6 +17,7 @@ public class Agent extends AbstractAgent {
     public Map map;
     public long time = 1L;
     boolean hasGold = false;
+    final Random random = new Random(43);
 
     enum Direction {
         LEFT, RIGHT, UP, DOWN
@@ -48,6 +49,7 @@ public class Agent extends AbstractAgent {
             StatusMessage status = sense();
 
             map.updateNeighborhoodTime(status, time);
+            map.agents[getAgentId()-1] = map.getAt(status.agentX, status.agentY);
             for (int agentId = 1; agentId <= 4; agentId++) {
                 if (agentId != getAgentId()) {
                     sendMessage(agentId, new MapMessage(StatusMessage.AGENT, status.agentX, status.agentY));
@@ -116,6 +118,10 @@ public class Agent extends AbstractAgent {
     public StatusMessage randomMoveUntilMoved(StatusMessage origPos, StatusMessage curPos, Random random) throws IOException {
         while (curPos.agentX == origPos.agentX && curPos.agentY == origPos.agentY) {
             curPos = goInDirection(Utils.randomEnum(Direction.class, random));
+            try {
+                //TODO: maybe remove
+                Thread.sleep(random.nextInt(20));
+            } catch(InterruptedException ie) {}
         }
         return curPos;
     }
@@ -129,9 +135,10 @@ public class Agent extends AbstractAgent {
                     depot = new Position(M.x, M.y);
                     strategy = new GoToDepotStrategy(this);
                     break;
-                    case StatusMessage.AGENT:
-                        map.updateNeighborhoodTime(M.x, M.y, time);
-                    break;
+                case StatusMessage.AGENT:
+                    map.updateNeighborhoodTime(M.x, M.y, time);
+                    map.agents[M.getSender()-1] = map.getAt(M.x, M.y);
+                break;
                 default:
                     log("I have received " + M);
                     break;

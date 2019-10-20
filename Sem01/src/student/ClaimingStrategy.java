@@ -4,6 +4,7 @@ import mas.agents.task.mining.Position;
 import mas.agents.task.mining.StatusMessage;
 
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 public class ClaimingStrategy extends AbstractStrategy {
@@ -29,6 +30,11 @@ public class ClaimingStrategy extends AbstractStrategy {
                     if (agentId != agent.getAgentId()) {
                         agent.sendMessage(agentId, new ClaimMessage(x, y));
                     }
+                }
+                Position nextStep = agent.map.goFromTo(status, new Position(x, y));
+                if (nextStep != null) {
+                    Agent.Direction goTo = agent.getDirection(status, nextStep);
+                    status = agent.randomMoveUntilMoved(status, agent.goInDirection(goTo), agent.random);
                 }
             }
         } else {

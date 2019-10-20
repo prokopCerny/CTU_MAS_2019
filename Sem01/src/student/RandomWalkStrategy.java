@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.Random;
 
 public class RandomWalkStrategy extends AbstractStrategy {
-    final Random random = new Random(43);
 
     public RandomWalkStrategy(Agent agent) {
         super(agent);
@@ -15,7 +14,7 @@ public class RandomWalkStrategy extends AbstractStrategy {
 
     @Override
     public StatusMessage act(StatusMessage status) throws Exception {
-        switch (random.nextInt(4)) {
+        switch (agent.random.nextInt(4)) {
             case 0:
                 status = agent.left();
                 break;
@@ -52,6 +51,10 @@ public class RandomWalkStrategy extends AbstractStrategy {
 
     @Override
     public void handleMessage(AgentMessage m) throws Exception {
+        if (m instanceof ClaimResponseMessage) {
+            ClaimResponseMessage M = (ClaimResponseMessage) m;
+            agent.map.updateClaim(M.x, M.y, M.agentId);
+        }
 
     }
 }
