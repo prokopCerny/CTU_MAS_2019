@@ -190,10 +190,15 @@ public class Map {
         return oldestClosest(from.x, from.y);
     }
 
+    public long oldestAge() {
+        return map.stream().sorted(Comparator.comparingLong(n -> n.lastSeen)).map(n -> n.lastSeen).skip(agent.getAgentId()-1).findFirst().get();
+    }
+
     public Position oldestClosest(int x, int y) {
 //        Comparator<MapNode> c = Comparator.<MapNode>comparingLong(n -> n.lastSeen).thenComparing(n -> Utils.manhattanDist(x, y, n.x, n.y), Collections.reverseOrder());
         Comparator<MapNode> c = Comparator.<MapNode>comparingLong(n -> n.lastSeen).thenComparing(n -> Utils.manhattanDist(x, y, n.x, n.y));
-        Optional<MapNode> oldClo = map.stream().filter(n -> n.type != StatusMessage.OBSTACLE).sorted(c).findAny();
+        //maybe don't do the skip
+        Optional<MapNode> oldClo = map.stream().filter(n -> n.type != StatusMessage.OBSTACLE).sorted(c).skip(agent.getAgentId()-1).findFirst();
 
         if (oldClo.isPresent()) {
 //            try {

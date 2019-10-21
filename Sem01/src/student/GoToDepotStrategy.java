@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class GoToDepotStrategy extends AbstractStrategy {
-//    Position currentDestination = null;
+    Position currentDestination = null;
 
     public GoToDepotStrategy(Agent agent) {
         super(agent);
@@ -39,12 +39,27 @@ public class GoToDepotStrategy extends AbstractStrategy {
 //                if (currentDestination == null || agent.map.getAt(currentDestination).type == StatusMessage.OBSTACLE || Utils.manhattanDist(status, currentDestination) <= 1) {
 //                    currentDestination = currentDestination = agent.map.oldestClosest(status);
 //                }
-                Position nextStep = agent.map.goFromTo(status, agent.map.oldestClosest(status));
-                if (nextStep != null) {
-                    status = agent.randomMoveUntilMoved(status, agent.goInDirection(agent.getDirection(status, nextStep)), agent.random);
-                } else {
-                    status = agent.randomMoveUntilMoved(status, status, agent.random);
+                if (currentDestination == null
+                            || agent.map.getAt(currentDestination).type == StatusMessage.OBSTACLE
+                            || Utils.manhattanDist(status, currentDestination) < 1
+                            || agent.map.getAt(currentDestination).lastSeen > agent.map.oldestAge()) {
+                    currentDestination = agent.map.oldestClosest(status);
+//            agent.log(String.format("Here (%d, %d), dist: %d", currentDestination.x, currentDestination.y, Utils.manhattanDist(status, currentDestination)));
                 }
+
+                Position nextStep = agent.map.goFromTo(status,currentDestination);
+                if (nextStep == null) {
+                    status = agent.randomMoveUntilMoved(status, status, agent.random);
+                } else {
+                    Agent.Direction goTo = agent.getDirection(status, agent.map.goFromTo(status,currentDestination));
+                    status = agent.randomMoveUntilMoved(status, agent.goInDirection(goTo), agent.random);
+                }
+//                Position nextStep = agent.map.goFromTo(status, agent.map.oldestClosest(status));
+//                if (nextStep != null) {
+//                    status = agent.randomMoveUntilMoved(status, agent.goInDirection(agent.getDirection(status, nextStep)), agent.random);
+//                } else {
+//                    status = agent.randomMoveUntilMoved(status, status, agent.random);
+//                }
             }
         } else {
             agent.strategy = new OldestWalkStrategy(agent);

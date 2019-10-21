@@ -50,7 +50,10 @@ public class OldestWalkStrategy extends AbstractStrategy {
             agent.strategy = new GoToDepotStrategy(agent);
         }
 
-        if (currentDestination == null || agent.map.getAt(currentDestination).type == StatusMessage.OBSTACLE || Utils.manhattanDist(status, currentDestination) <= 1) {
+        if (currentDestination == null
+                    || agent.map.getAt(currentDestination).type == StatusMessage.OBSTACLE
+                    || Utils.manhattanDist(status, currentDestination) < 1
+                    || agent.map.getAt(currentDestination).lastSeen > agent.map.oldestAge()) {
             currentDestination = agent.map.oldestClosest(status);
 //            agent.log(String.format("Here (%d, %d), dist: %d", currentDestination.x, currentDestination.y, Utils.manhattanDist(status, currentDestination)));
         }
@@ -62,8 +65,6 @@ public class OldestWalkStrategy extends AbstractStrategy {
             Agent.Direction goTo = agent.getDirection(status, agent.map.goFromTo(status,currentDestination));
             status = agent.randomMoveUntilMoved(status, agent.goInDirection(goTo), agent.random);
         }
-
-
 
         agent.log(String.format("I am now on position [%d,%d] of a %dx%d map.",
                 status.agentX, status.agentY, status.width, status.height));
