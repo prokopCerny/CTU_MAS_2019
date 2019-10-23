@@ -36,7 +36,6 @@ public class GoToGoldStrategy extends AbstractStrategy {
             for (int agentId : nearestAgents) {
                 //TODO
                 agent.sendMessage(agentId, new HelpMeMessage(status.agentX, status.agentY));
-                Thread.sleep(10);
             }
 
         }
