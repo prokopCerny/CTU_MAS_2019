@@ -63,7 +63,9 @@ public class Agent extends AbstractAgent {
                 }
             }
             for (StatusMessage.SensorData d : status.sensorInput) {
-                if(map.update(d.x, d.y, d.type, time)) {
+                // the ... && d.type != AGENT check is redundant while
+                // Map implementation returns false when receiving AGENT updates
+                if(map.update(d.x, d.y, d.type, time) && d.type != StatusMessage.AGENT) {
                     for (int agentId = 1; agentId <= 4; agentId++) {
                         if (agentId != getAgentId()) {
                             sendMessage(agentId, new MapMessage(d.type, d.x, d.y));
@@ -73,14 +75,6 @@ public class Agent extends AbstractAgent {
             }
 
             strategy.act(status);
-
-
-
-            // REMOVE THIS BEFORE SUBMITTING YOUR SOLUTION TO BRUTE !!
-            //   (this is meant just to slow down the execution a bit for demonstration purposes)
-//            try {
-//                Thread.sleep(2000);
-//            } catch(InterruptedException ie) {}
         }
     }
 
@@ -136,15 +130,16 @@ public class Agent extends AbstractAgent {
     void handleMessage(Message m) throws Exception {
         if (m instanceof MapMessage) {
             MapMessage M = (MapMessage) m;
-            map.update(M, time);
             switch (M.type) {
                 case StatusMessage.AGENT:
+                    //assuming MapMessage with type AGENT is only sent about the sender of a message
                     map.updateNeighborhoodTime(M.x, M.y, time);
                     map.agents[M.getSender()-1] = map.getAt(M.x, M.y);
 //                    log(String.format("updated %d", M.getSender()));
                 break;
                 default:
-                    log("I have received " + M);
+                    map.update(M, time);
+//                    log("I have received " + M);
                     break;
             }
         } else if (m instanceof ClaimMessage) {

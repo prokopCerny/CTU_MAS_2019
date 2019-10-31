@@ -57,19 +57,32 @@ public class Map {
         n.type = 0;
     }
 
+    /**
+     *
+     * @param x
+     * @param y
+     * @param agentId
+     * @return id of the agent by whom the x, y spot is claimed
+     */
     public int updateClaim(int x, int y, int agentId) {
         MapNode n = getAt(x, y);
         if (n.claimedBy == -1) {
             n.claimedBy = agentId;
-            agentClaims[agentId-1] = n;
+            if (agentId <= 4) {
+                agentClaims[agentId - 1] = n;
+            }
             return agentId;
         } else {
             if (n.claimedBy < agentId) {
                 return n.claimedBy;
             } else {
-                agentClaims[n.claimedBy-1] = null;
+                if (n.claimedBy <= 4) {
+                    agentClaims[n.claimedBy - 1] = null;
+                }
                 n.claimedBy = agentId;
-                agentClaims[agentId-1] = n;
+                if (agentId <= 4) {
+                    agentClaims[agentId - 1] = n;
+                }
                 return agentId;
             }
         }
