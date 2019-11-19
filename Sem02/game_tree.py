@@ -9,6 +9,11 @@ from copy import deepcopy
 # However if you wish, you can completely change structure of the code.
 # What we care about is that the tree is exported in valid format.
 
+agentInfoCounter = 1
+banditInfoCounter = 1
+
+agentHistToInfoNumMap = dict()
+
 class HistoryType(IntEnum):
     decision = 1
     chance = 2
@@ -27,6 +32,7 @@ class ActionType(IntEnum):
     goAgent = 3
     killAgent = 4
     survive = 5
+    cantMove = 6
 
 
 class Action:
@@ -35,15 +41,18 @@ class Action:
         self.type = type
 
     def __str__(self):
-        return f'{self.type.name}' + "" if self.data is None else f'{self.data}'  # action label
+        return f'[{self.type.name}' + ("" if self.data is None else f' {self.data}') + "]"  # action label
 
 
 class Infoset:
+    def __init__(self, num):
+        self.num = num
+
     def index(self) -> int:
-        raise NotImplementedError
+        return self.num
 
     def __str__(self):
-        raise NotImplementedError
+        return str(self.num)
 
 
 class History:
@@ -56,15 +65,16 @@ class History:
         self.dangerous = dangerous
         self.obstacles = obstacles
         self.bandits = set()
-        self.player_known_bandits = set()
         self.alarm = False
         self.pickedGolds = 0
         self.player = Player.bandit
-        self.type = HistoryType.decision
+        self.htype = HistoryType.decision
         self.visited = {playerPos}
+        self.agentHistString = ""
+
 
     def type(self) -> HistoryType:
-        return self.type
+        return self.htype
 
     def clone(self) -> 'History':
         return deepcopy(self)
@@ -74,12 +84,23 @@ class History:
 
     # infoset index: histories with the same infoset index belong to the same infoset
     def infoset(self) -> Infoset:
-        raise NotImplementedError
+        if self.player == Player.agent:
+            if self.agentHistString not in agentHistToInfoNumMap:
+                global agentInfoCounter
+                agentHistToInfoNumMap[self.agentHistString] = agentInfoCounter
+                agentInfoCounter += 1
+            return Infoset(agentHistToInfoNumMap[self.agentHistString])
+        else:
+            global banditInfoCounter
+            info = Infoset(banditInfoCounter)
+            banditInfoCounter += 1
+            return info
+
 
     def getValidNeighbors(self, fromPos):
         dirs = [(1, 0), (0, -1), (0, 1), (-1, 0)]
         neighs = [tuple(map(sum, zip(fromPos, d))) for d in dirs]
-        return [n for n in neighs if n not in self.obstacles]
+        return [n for n in neighs if n not in self.obstacles and n not in self.visited]
 
     def actions(self) -> List[Action]:
         if self.player == Player.bandit:
@@ -95,13 +116,19 @@ class History:
                 return actions
         elif self.player == Player.agent:
             neighs = self.getValidNeighbors(self.playerPos)
-            return [Action(ActionType.goAgent, place) for place in neighs]
+            if neighs:
+                return [Action(ActionType.goAgent, place) for place in neighs]
+            else:
+                return [Action(ActionType.cantMove)]
         else:
             return [Action(ActionType.killAgent), Action(ActionType.survive)]
 
     # for player 1
     def utility(self) -> float:
-        raise NotImplementedError
+        if self.playerPos == self.destination:
+            return self.pickedGolds + 10
+        else:
+            return 0
 
     def chance_prob(self, action: Action) -> float:
         if action.type == ActionType.killAgent:
@@ -121,18 +148,46 @@ class History:
                 b_from, b_to = action.data
                 new_hist.bandits.remove(b_from)
                 new_hist.bandits.add(b_to)
-                new_hist.alarm = True
                 new_hist.player = Player.agent
                 return new_hist
-            elif action == ActionType.nothing:
+            elif action.type == ActionType.nothing:
                 new_hist.player = Player.agent
                 return new_hist
             else:
-                raise NotImplementedError("BAD ACTIONTYPE FOR BANDIT")
+                raise NotImplementedError(f'BAD ACTIONTYPE FOR BANDIT {action}')
         elif self.player == Player.agent:
-            pass
+            if action.type == ActionType.goAgent:
+                new_hist.playerPos = action.data
+                new_hist.visited.add(action.data)
+                new_hist.agentHistString += str(action)
+                if action.data in self.dangerous:
+                    if action.data in self.bandits:
+                        new_hist.alarm = True
+                        new_hist.player = None
+                        new_hist.htype = HistoryType.chance
+                    elif not self.alarm:
+                        new_hist.alarm = True
+                        new_hist.player = Player.bandit
+                elif action.data in self.golds:
+                    new_hist.pickedGolds+=1
+                elif action.data == self.destination:
+                    new_hist.htype = HistoryType.terminal
+            elif action.type == ActionType.cantMove:
+                new_hist.htype = HistoryType.terminal
+            else:
+                raise NotImplementedError(f'BAD ACTIONTYPE FOR agent {action}')
+            return new_hist
         else:
-            pass
+            if action.type == ActionType.killAgent:
+                new_hist.htype = HistoryType.terminal
+            elif action.type == ActionType.survive:
+                new_hist.htype = HistoryType.decision
+                new_hist.player = Player.agent
+                new_hist.agentHistString += str(action)
+            else:
+                raise NotImplementedError(f'BAD ACTIONTYPE FOR chance {action}')
+            return new_hist
+
 
     def __str__(self):
         return ""  # history label
@@ -140,6 +195,13 @@ class History:
 
 # read the maze from input and return the root node
 def create_root() -> History:
+    global agentInfoCounter
+    agentInfoCounter = 1
+    global banditInfoCounter
+    banditInfoCounter = 1
+    global agentHistToInfoNumMap
+    agentHistToInfoNumMap = dict()
+
     rows = int(input())
     cols = int(input())
     obstacles = set()
@@ -161,7 +223,9 @@ def create_root() -> History:
             elif type == 'G':
                 golds.add((row, col))
     bandits = int(input())
-    P_attack_success = float(int())
+    P_attack_success = float(input())
+
+    return History(obstacles, dangerous, golds, player, destination, bandits, P_attack_success)
 
 
 ## Following is an example implementation of the game of simple poker.
