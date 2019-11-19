@@ -29,6 +29,11 @@ public class GoToDepotStrategy extends AbstractStrategy {
                         status = agent.drop();
                         agent.hasGold = false;
                     } else {
+//                        if (agent.map.getAt(status.agentX, status.agentY).neighbors.size() > 1) {
+//                            status = agent.drop();
+//                            agent.hasGold = false;
+//                            agent.map.updateClaim(status.agentX, status.agentY, Integer.MAX_VALUE);
+//                        }
                         status = agent.randomMoveUntilMoved(status, status, agent.random);
                     }
                 } else {
