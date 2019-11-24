@@ -13,6 +13,7 @@ agentInfoCounter = 1
 banditInfoCounter = 1
 
 agentHistToInfoNumMap = dict()
+banditHistToInfoNumMap = dict()
 
 class HistoryType(IntEnum):
     decision = 1
@@ -71,6 +72,7 @@ class History:
         self.htype = HistoryType.decision
         self.visited = {playerPos}
         self.agentHistString = ""
+        self.banditHistString = ""
 
 
     def type(self) -> HistoryType:
@@ -91,10 +93,11 @@ class History:
                 agentInfoCounter += 1
             return Infoset(agentHistToInfoNumMap[self.agentHistString])
         else:
-            global banditInfoCounter
-            info = Infoset(banditInfoCounter)
-            banditInfoCounter += 1
-            return info
+            if self.banditHistString not in banditHistToInfoNumMap:
+                global banditInfoCounter
+                banditHistToInfoNumMap[self.banditHistString] = banditInfoCounter
+                banditInfoCounter += 1
+            return Infoset(banditHistToInfoNumMap[self.banditHistString])
 
 
     def getValidNeighbors(self, fromPos):
@@ -143,15 +146,18 @@ class History:
                 new_hist.bandits.update(action.data)
                 new_hist.unusedBanditCount = 0
                 new_hist.player = Player.agent
+                new_hist.banditHistString += str(action)
                 return new_hist
             elif action.type == ActionType.moveBandit:
                 b_from, b_to = action.data
                 new_hist.bandits.remove(b_from)
                 new_hist.bandits.add(b_to)
                 new_hist.player = Player.agent
+                new_hist.banditHistString += str(action)
                 return new_hist
             elif action.type == ActionType.nothing:
                 new_hist.player = Player.agent
+                new_hist.banditHistString += str(action)
                 return new_hist
             else:
                 raise NotImplementedError(f'BAD ACTIONTYPE FOR BANDIT {action}')
@@ -167,6 +173,7 @@ class History:
                         new_hist.htype = HistoryType.chance
                     elif not self.alarm:
                         new_hist.alarm = True
+                        new_hist.banditHistString += str(action)
                         new_hist.player = Player.bandit
                 elif action.data in self.golds:
                     new_hist.pickedGolds+=1
