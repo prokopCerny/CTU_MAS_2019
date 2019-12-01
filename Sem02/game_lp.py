@@ -35,7 +35,7 @@ from game_tree import *
 import numpy as np
 from cvxopt import matrix, solvers
 
-class MyNode:
+class Node:
     def __init__(self, val: float, type: HistoryType, player: int, p1seq, p2seq, infoset: int):
         self.infoset = infoset
         self.p2seq = p2seq
@@ -46,7 +46,7 @@ class MyNode:
         self.children = []
 
 
-def transform_tree(root:History):
+def transform_tree(root: History):
     p1seq_counter = -1
     p1seq_to_index = dict()
     p1info_counter = -1
@@ -58,6 +58,7 @@ def transform_tree(root:History):
 
     def transform_tree_helper(root: History, chance: float, p1seq, p2seq):
         nonlocal p1seq_counter, p1info_counter, p2seq_counter, p2info_counter
+
         if p1seq not in p1seq_to_index:
             p1seq_counter += 1
             p1seq_to_index[p1seq] = p1seq_counter
@@ -77,15 +78,16 @@ def transform_tree(root:History):
                     p2info_to_index[infoset] = p2info_counter
         else:
             infoset = -1
+
         value: float = float(chance if root.type() != HistoryType.terminal else chance * root.utility())
         cur_player = int(root.current_player()) if root.type() == HistoryType.decision else -1
 
-        node = MyNode(value,
-                      root.type(),
-                      cur_player,
-                      p1seq,
-                      p2seq,
-                      infoset)
+        node = Node(value,
+                    root.type(),
+                    cur_player,
+                    p1seq,
+                    p2seq,
+                    infoset)
 
         if root.type() == HistoryType.terminal:
             return node
@@ -96,11 +98,12 @@ def transform_tree(root:History):
                 new_chance = value if root.type() != HistoryType.chance else value * root.chance_prob(action)
                 node.children.append(transform_tree_helper(root.child(action), new_chance, new_p1seq, new_p2seq))
             return node
-    new_root = transform_tree_helper(root, 1.0, ("",), ("",))
 
+    new_root = transform_tree_helper(root, 1.0, ("",), ("",))
     return new_root, p1seq_to_index, p2seq_to_index, p1info_to_index, p2info_to_index
 
-def create_matrices(root: MyNode, player: int, p_seq_to_index, op_info_to_index, p_info_to_index, op_seq_to_index):
+
+def create_matrices(root: Node, player: int, p_seq_to_index, op_info_to_index, p_info_to_index, op_seq_to_index):
     p_info_count = len(p_info_to_index)
     p_seq_count = len(p_seq_to_index)
     op_info_count = len(op_info_to_index)
@@ -121,7 +124,7 @@ def create_matrices(root: MyNode, player: int, p_seq_to_index, op_info_to_index,
     Gp = np.zeros(Gp_dimensions)
     c = np.zeros(c_len)
 
-    def handle_opponent_child(node: MyNode, infoset: int):
+    def handle_opponent_child(node: Node, infoset: int):
         if node.type == HistoryType.terminal:
             p_seq = node.p1seq if player == 0 else node.p2seq
             op_seq = node.p1seq if player == 1 else node.p2seq
@@ -139,7 +142,7 @@ def create_matrices(root: MyNode, player: int, p_seq_to_index, op_info_to_index,
                 for child in node.children:
                     handle_opponent_child(child, infoset)
 
-    def handle_node(node: MyNode):
+    def handle_node(node: Node):
         if node.player == player:
             cur_seq = node.p1seq if player == 0 else node.p2seq
             for child in node.children:
@@ -166,11 +169,10 @@ def create_matrices(root: MyNode, player: int, p_seq_to_index, op_info_to_index,
     if player == 1:
         c = -c
         Gp = -Gp
+
     hp = np.zeros(hp_len)
     G = np.r_[G1, Gp]
     h = np.concatenate([h1, hp])
-
-
 
     A[-1, 0] = 1
     b = np.zeros(b_len)
