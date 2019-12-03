@@ -128,7 +128,7 @@ def create_matrices(root: Node, player: int, p_seq_to_index, op_info_to_index, p
         if node.type == HistoryType.terminal:
             p_seq = node.p1seq if player == 0 else node.p2seq
             op_seq = node.p1seq if player == 1 else node.p2seq
-            Gp[op_seq_shift[op_seq], p_seq_to_index[p_seq]] = -node.val
+            Gp[op_seq_shift[op_seq], p_seq_to_index[p_seq]] += -node.val
             Gp[op_seq_shift[op_seq], op_info_shift[infoset]] = 1
         elif node.type == HistoryType.chance:
             for child in node.children:
@@ -143,6 +143,11 @@ def create_matrices(root: Node, player: int, p_seq_to_index, op_info_to_index, p
                     handle_opponent_child(child, infoset)
 
     def handle_node(node: Node):
+        if node.type == HistoryType.terminal:
+            p_seq = node.p1seq if player == 0 else node.p2seq
+            op_seq = node.p1seq if player == 1 else node.p2seq
+            if op_seq == ("",):
+                c[p_seq_to_index[p_seq]] += -node.val
         if node.player == player:
             cur_seq = node.p1seq if player == 0 else node.p2seq
             for child in node.children:
