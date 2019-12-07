@@ -92,9 +92,12 @@ def transform_tree(root: History):
         if root.type() == HistoryType.terminal:
             return node
         else:
-            for action in root.actions():
-                new_p1seq = p1seq if cur_player != 0 else p1seq + (f'{str(action)}{p1info_to_index[infoset]}',)
-                new_p2seq = p2seq if cur_player != 1 else p2seq + (f'{str(action)}{p2info_to_index[infoset]}',)
+            for idx, action in enumerate(root.actions()):
+                # presuming that actions are generated in deterministic fashion, quite a strong requirement
+                # so an action is determined uniquely by the tuple (index in the list .actions(), infoset)
+                # if not, change so it is identified by calling str(action) and then appending the infoset
+                new_p1seq = p1seq if cur_player != 0 else p1seq + (f'[{idx}][{p1info_to_index[infoset]}]',)
+                new_p2seq = p2seq if cur_player != 1 else p2seq + (f'[{idx}][{p2info_to_index[infoset]}]',)
                 new_chance = value if root.type() != HistoryType.chance else value * root.chance_prob(action)
                 node.children.append(transform_tree_helper(root.child(action), new_chance, new_p1seq, new_p2seq))
             return node
